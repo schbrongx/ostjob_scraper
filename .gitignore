@@ -1,0 +1,40 @@
+# Python-specific files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# .md output files
+*.md
+# But include README.md
+!README.md
+
+# Virtual environment
+venv/
+env/
+*.venv
+.env
+
+# PyInstaller
+*.manifest
+*.spec
+build/
+dist/
+
+# IDE-specific files (optional)
+.vscode/
+.idea/
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Package files
+*.egg
+*.egg-info/

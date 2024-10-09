@@ -24,6 +24,14 @@ python ostjob_scraper.py -d 7 -t "System Engineer" "DevOps Engineer" -f "jobs_ou
 ```
 Dieser Aufruf durchsucht die letzten 7 Tage nach den Jobtiteln "System Engineer" und "DevOps Engineer" und speichert das Ergebnis in der Datei "jobs_output.md". Das Log-Level ist auf "verbose" gesetzt.
 
+## ➜ Download des Releases
+
+Das erste Release des `ostjob_scraper` steht als ausführbare Datei (.exe) zur Verfügung, die ohne Python-Installation direkt unter Windows genutzt werden kann.
+
+- **[Download ostjob_scraper.exe](https://github.com/schbrongx/ostjob_scraper/releases/download/v1.0.0/ostjob_scraper.exe)**
+
+Dieses Release enthält die grundlegende Funktionalität zum Scrapen von Jobangeboten von ostjob.ch. Laden Sie die `.exe`-Datei herunter, um den Scraper einfach und bequem auszuführen.
+
 ## ➜ Standardparameter ändern
 
 Die Standardparameter des Scrapers können direkt im Code angepasst werden:
@@ -42,4 +50,3 @@ Falls Sie Fragen haben oder Fehler finden, erstellen Sie bitte ein Issue im Repo
 **Kontakt**: Falls Sie Fragen haben oder Hilfe benötigen, können Sie mich direkt über GitHub kontaktieren.
 
 **Lizenz**: Dieses Projekt steht unter der MIT-Lizenz.
-

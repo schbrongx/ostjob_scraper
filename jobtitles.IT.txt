@@ -1,0 +1,31 @@
+ICT System Ingenieur
+ICT System Engineer
+IT System Ingenieur
+IT System Engineer
+System Ingenieur
+System Engineer
+System Administrator
+Systemadministrator,
+System Architekt
+System Architect
+Netzwerkadministrator
+Network Administrator,
+IT Infrastruktur Ingenieur
+IT Infrastructure Engineer
+IT Support Engineer
+Support Techniker,
+Cloud Engineer
+Cloud Architekt
+DevOps Engineer
+Platform Engineer,
+IT Spezialist
+IT Specialist
+IT Generalist
+Informatiker
+Informatik
+Netzwerk Ingenieur
+Network Engineer,
+Infrastructure Engineer
+IT Operations Engineer
+IT Servicetechniker
+Systemtechniker

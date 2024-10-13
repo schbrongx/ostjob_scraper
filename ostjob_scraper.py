@@ -1,11 +1,15 @@
 """
-This script scrapes job listings from the website ostjob.ch. It allows users to specify job titles and a time frame (number of days) to search for relevant job postings. The results can be saved to a file or displayed on the console. The script uses requests to fetch web pages and BeautifulSoup to parse the HTML content.
+This script scrapes job listings from the website ostjob.ch. It allows users to specify job titles
+and a time frame (number of days) to search for relevant job postings. The results can be saved to
+a file or displayed on the console. The script uses requests to fetch web pages and BeautifulSoup
+to parse the HTML content.
 
 Key features:
 - Configurable search for specific job titles.
 - Ability to specify how many days back the search should include.
 - Option to save results to a file or print to the console.
 - Logging support for debugging and tracking scraping progress.
+- Option to load job titles from a file.
 """
 
 import requests
@@ -21,23 +25,20 @@ import webbrowser
 # Default configuration
 DEFAULT_DAYS = 1
 DEFAULT_OUTPUT_FILE = "ostjob.ch-scraper-out.md"
-JOB_TITLES = [
-    "ICT System Ingenieur", "ICT System Engineer", "IT System Ingenieur", "IT System Engineer",
-    "System Ingenieur", "System Engineer", "System Administrator", "Systemadministrator",
-    "System Architekt", "System Architect", "Netzwerkadministrator", "Network Administrator",
-    "IT Infrastruktur Ingenieur", "IT Infrastructure Engineer", "IT Support Engineer", "Support Techniker",
-    "Cloud Engineer", "Cloud Architekt", "DevOps Engineer", "Platform Engineer",
-    "IT Spezialist", "IT Specialist", "IT Generalist", "Informatiker", "Informatik", "Netzwerk Ingenieur", "Network Engineer",
-    "Infrastructure Engineer", "IT Operations Engineer", "IT Servicetechniker", "Systemtechniker"
-]
+DEFAULT_JOBTITLEFILE = "jobtitles.txt"  # Default filename for job titles
+DEFAULT_JOB_TITLES = [ "" ]
 
 # Function to initialize logging
 def init_logging(logfile=None, verbose=False):
+    """
+    Log to lofile or to stdout if no logfile provided
+    """
     log_level = logging.DEBUG if verbose else logging.INFO
     if logfile:
         logging.basicConfig(filename=logfile, level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
     else:
         logging.basicConfig(stream=sys.stdout, level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # Function to validate the output directory
 def validate_output_directory(filepath):
@@ -48,6 +49,40 @@ def validate_output_directory(filepath):
     if directory and not os.path.exists(directory):
         logging.error(f"Output directory '{directory}' does not exist.")
         sys.exit(1)
+
+
+# Function to fetch job titles from a file
+def load_job_titles_from_file(jobtitlefile):
+    """
+    Loads job titles from the specified file.
+    
+    Args:
+        jobtitlefile (str): The file to load job titles from.
+    
+    Returns:
+        list: A list of job titles read from the file.
+    
+    Raises:
+        SystemExit: If the file cannot be read or is empty.
+    """
+    if not os.path.exists(jobtitlefile):
+        logging.error(f"Provided job title file '{jobtitlefile}' not found.")
+        sys.exit(1)
+
+    try:
+        with open(jobtitlefile, "r", encoding="utf-8") as f:
+            titles = [line.strip() for line in f if line.strip()]
+    except Exception as e:
+        logging.error(f"Error reading job title file '{jobtitlefile}': {str(e)}")
+        sys.exit(1)
+
+    if not titles:
+        logging.error(f"Job title file '{jobtitlefile}' is empty.")
+        sys.exit(1)
+
+    logging.info(f"Job titles loaded from file: {', '.join(titles)}")
+    return titles
+
 
 # Function to fetch a page and extract job listings
 def scrape_page(url, job_titles, days):
@@ -124,6 +159,7 @@ def scrape_page(url, job_titles, days):
 
     return job_entries, has_recent_jobs, total_jobs_on_page
 
+
 # Main function to scrape multiple pages
 def scrape_ostjob(job_titles, days, output_file, no_save):
     """
@@ -174,17 +210,63 @@ def scrape_ostjob(job_titles, days, output_file, no_save):
         logging.info("Printing results to stdout.")
         print("\n".join(output))
 
+
+# Function to prompt user for input with a default value
+def ask_for_input(prompt, default_value):
+    """
+    Prompts the user for input and uses a default value if no input is provided.
+    
+    Args:
+        prompt (str): The message to display to the user.
+        default_value (str): The default value to use if no input is provided.
+    
+    Returns:
+        str: The value either provided by the user or the default value.
+    """
+    user_input = input(f"{prompt} [{default_value}]: ").strip()
+    if user_input == "":
+        return default_value
+    return user_input
+
+
+# Function for interactive menu mode
+def menu_mode():
+    """
+    Interactive mode that prompts the user for values.
+    
+    Returns:
+        dict: A dictionary containing the collected parameters.
+    """
+    print("Entering interactive menu mode.")
+    
+    # Ask for days
+    days = int(ask_for_input("Days (enter number)", DEFAULT_DAYS))
+    
+    # Add more prompts here if needed, e.g., for titles
+    
+    return {
+        "days": days
+        # Add more parameters if needed
+    }
+
+
 # Command-line arguments handling
 def main():
     """
     Main function to handle command-line arguments and start the scraping process.
+    
+    -t/--titles and -j/--jobtitlefile are mutually exclusive.
+    The jobtitlefile can be used to load job titles from a file.
     """
     parser = argparse.ArgumentParser(description="Web Scraper for ostjob.ch")
     parser.add_argument("-d", "--days", type=int, default=DEFAULT_DAYS, help="Number of days back to search (default: 1)")
-    parser.add_argument("-t", "--titles", nargs='*', default=JOB_TITLES, help="List of job titles to filter")
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument("-t", "--titles", nargs='*', default=None, help="List of job titles to filter")
+    group.add_argument("-j", "--jobtitlefile", type=str, help="Path to file containing job titles (one per line)")
     parser.add_argument("-n", "--nosave", action="store_true", help="Prevent saving the output to file")
     parser.add_argument("-f", "--file", type=str, default=DEFAULT_OUTPUT_FILE, help="Path to output file (default: ostjob.ch-scraper-out.md)")
     parser.add_argument("-l", "--logging", nargs="?", const=True, help="Enable logging (Optional: filename)")
+    parser.add_argument("-m", "--menu", action="store_true", help="Enable interactive menu mode")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging output")
 
     args = parser.parse_args()
@@ -192,13 +274,39 @@ def main():
     # Initialize logging
     init_logging(args.logging if isinstance(args.logging, str) else None, args.verbose)
 
+    # Validate job title input
+    if args.jobtitlefile:
+        # Load job titles from the specified file
+        job_titles = load_job_titles_from_file(args.jobtitlefile)
+    elif os.path.exists(DEFAULT_JOBTITLEFILE):
+        # If no file was provided, check for the default job title file
+        logging.info(f"Using default job title file '{DEFAULT_JOBTITLEFILE}'")
+        job_titles = load_job_titles_from_file(DEFAULT_JOBTITLEFILE)
+    else:
+        # Use provided titles or default titles
+        job_titles = args.titles if args.titles else DEFAULT_JOB_TITLES
+
+    # Check for menu mode
+    if args.menu:
+        params = menu_mode()
+        days = params["days"]
+    else:
+        # Use command-line arguments by default
+        days = args.days
+
+    logging.info(f"Scraping for {days} days with titles: {', '.join(job_titles)}")
+
     # Validate output directory
     if not args.nosave:
         validate_output_directory(args.file)
 
     # Start scraping
-    scrape_ostjob(args.titles, args.days, args.file, args.nosave)
+    scrape_ostjob(job_titles, days, args.file, args.nosave)
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        logging.info(f"User interrupted execution. Aborting script.")
     input("Press Enter to exit...")
